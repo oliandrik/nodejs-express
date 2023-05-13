@@ -7,6 +7,7 @@ const validateAuth = require("../middleware/validate-auth");
 
 router.post("/signup", validateAuth, async (req, res) => {
   try {
+    console.log(req.body.email);
     const takenEmail = await User.findOne({ email: req.body.email });
 
     if (takenEmail) {
@@ -23,11 +24,10 @@ router.post("/signup", validateAuth, async (req, res) => {
     });
 
     await newUser.save();
-    const token = jwt.sign(
-      { email: newUser.email },
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MjdkMTEyYjFhZWIwODhmNjUyZDIwMWQiLCJpYXQiOjE2NTIzNjM1NjMsImV4cCI6MTY1MjM2NzE2M30.xcLp-Fg3uh4IQF3OftsK6TWiHSmN5xBJf3E3UA6U44A",
-      { expiresIn: "10h" }
-    );
+
+    const token = jwt.sign({ email: newUser.email }, process.env.TOKEN, {
+      expiresIn: "10h",
+    });
     res.status(200).json({
       message: "Success",
       token: token,
@@ -55,11 +55,10 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Check your password" });
     }
 
-    const token = jwt.sign(
-      { email: user.email },
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MjdkMTEyYjFhZWIwODhmNjUyZDIwMWQiLCJpYXQiOjE2NTIzNjM1NjMsImV4cCI6MTY1MjM2NzE2M30.xcLp-Fg3uh4IQF3OftsK6TWiHSmN5xBJf3E3UA6U44A",
-      { expiresIn: "10h" }
-    );
+    const token = jwt.sign({ email: user.email }, process.env.TOKEN, {
+      expiresIn: "10h",
+    });
+
     res.status(200).json({
       message: "Success",
       token: token,

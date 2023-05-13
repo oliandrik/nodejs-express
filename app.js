@@ -7,9 +7,10 @@ const documentRoute = require("./routes/document");
 const multer = require("multer");
 const cors = require("cors");
 const File = require("./models/file.model");
+const dotenv = require("dotenv").config({ path: __dirname + "/.env" });
 
 mongoose
-  .connect("mongodb://127.0.0.1:27017/passport")
+  .connect(`mongodb://${process.env.DB_HOST}/${process.env.DB_DATABASE}`)
   .then(() => {
     app.listen(3000, () => {
       console.log("Server started on port 3000 && connected to db");
