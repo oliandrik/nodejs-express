@@ -10,7 +10,7 @@ const File = require("./models/file.model");
 const dotenv = require("dotenv").config({ path: __dirname + "/.env" });
 
 mongoose
-  .connect(`mongodb://${process.env.DB_HOST}/${process.env.DB_DATABASE}`)
+  .connect(`mongodb+srv://root:Root@cluster0.6ukpzxa.mongodb.net/`)
   .then(() => {
     app.listen(3000, () => {
       console.log("Server started on port 3000 && connected to db");
