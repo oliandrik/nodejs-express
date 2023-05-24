@@ -4,6 +4,7 @@ const File = require("../models/file.model");
 const User = require("../models/user.model");
 const verify = require("../middleware/auth");
 const multer = require("multer");
+const fs = require("fs");
 
 router.post("/", verify, async (req, res) => {
   try {
@@ -65,7 +66,11 @@ router.put("/:id", verify, async (req, res) => {
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "public/files");
+    const folderPath = "public/files";
+    if (!fs.existsSync(folderPath)) {
+      fs.mkdirSync(folderPath, { recursive: true });
+    }
+    cb(null, folderPath);
   },
   filename: function (req, file, cb) {
     const filetype = file.mimetype;
