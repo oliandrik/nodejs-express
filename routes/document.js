@@ -3,6 +3,7 @@ const Document = require("../models/document.model");
 const File = require("../models/file.model");
 const User = require("../models/user.model");
 const verify = require("../middleware/auth");
+const multer = require("multer");
 
 router.post("/", verify, async (req, res) => {
   try {
@@ -60,6 +61,38 @@ router.put("/:id", verify, async (req, res) => {
   } catch (error) {
     res.status(500).json(error);
   }
+});
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "public/files");
+  },
+  filename: function (req, file, cb) {
+    const filetype = file.mimetype;
+    const prefix = +new Date() + "_";
+    cb(null, prefix + file.fieldname + "." + filetype.split("/")[1]);
+  },
+});
+
+const upload = multer({ storage: storage });
+
+router.post("/upload", upload.single("myFile"), (req, res, next) => {
+  console.log("upload");
+  const file = req.file;
+  if (!file) {
+    const error = new Error("Please upload a file");
+    error.httpStatusCode = 400;
+    return next(error);
+  }
+
+  const newFile = new File({
+    documentId: req.body.documentId,
+    filename: file.filename,
+  });
+
+  newFile.save();
+
+  res.send(file);
 });
 
 module.exports = router;
