@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const Document = require("../models/document.model");
-const File = require("../models/file.model");
+const UploadFiles = require("../models/file.model");
 const User = require("../models/user.model");
 const verify = require("../middleware/auth");
 const multer = require("multer");
@@ -43,7 +43,7 @@ router.get("/:id", verify, async (req, res) => {
       userId: findUser._id,
       _id: req.params.id,
     });
-    const files = await File.find({ documentId: req.params.id });
+    const files = await UploadFiles.find({ documentId: req.params.id });
     res.status(200).json({ documents, files });
   } catch (error) {
     res.status(500).json(error);
@@ -81,23 +81,24 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-router.post("/upload", upload.single("myFile"), (req, res, next) => {
-  console.log("upload");
-  const file = req.file;
-  if (!file) {
-    const error = new Error("Please upload a file");
-    error.httpStatusCode = 400;
-    return next(error);
+router.post("/upload", upload.array("myFile"), async (req, res, next) => {
+  const { documentId } = req.body;
+  const files = req.files;
+  try {
+    for (const file of files) {
+      console.log(file.filename, "filename");
+      let newFile = new UploadFiles({
+        documentId: documentId,
+        filename: file.filename,
+      });
+      await newFile.save();
+    }
+
+    res.status(200).json({ message: "Файли успішно завантажено" });
+  } catch (err) {
+    console.error(err);
+    next(err);
   }
-
-  const newFile = new File({
-    documentId: req.body.documentId,
-    filename: file.filename,
-  });
-
-  newFile.save();
-
-  res.send(file);
 });
 
 module.exports = router;
